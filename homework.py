@@ -1,6 +1,7 @@
 import time
 import os
 import requests
+import sys
 
 from dotenv import load_dotenv
 from twilio.rest import Client
@@ -17,10 +18,26 @@ def get_status(user_id):
         'v': '5.92',
     }
 
-    response = requests.post(vk_url, params=params)
-    response_result = response.json().get('response')[0]
-    status = response_result['online']
-    return status
+    try:
+        response = requests.post(vk_url, params=params)
+        response_result = response.json().get('response')[0]
+        status = response_result['online']
+        return status
+    except requests.exceptions.ConnectionError as connection_error:
+        exception_processing(connection_error)
+    except requests.exceptions.HTTPError as http_error:
+        exception_processing(http_error)
+    except ValueError as value_error:
+        exception_processing(value_error)
+    except IndexError as index_error:
+        exception_processing(index_error)
+    except Exception as another_exception:
+        exception_processing(another_exception)
+
+
+def exception_processing(exception):
+    print(f'Except details: {exception}')
+    sys.exit()
 
 
 def sms_sender(sms_text):
